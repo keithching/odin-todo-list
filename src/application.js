@@ -9,7 +9,11 @@ const ProjectFactory = (name) => {
     // an array to control how many TODO objects are there
     let TODOarray = [];
             
-    return {name, TODOarray};
+    return {
+        name, 
+        TODOarray
+    };
+
 };
 
 
@@ -17,13 +21,24 @@ const ProjectFactory = (name) => {
 // title, description, due date, priority, notes, checklist
 const TODOFactory = (title, description, dueDate, priority) => {
 
-    title = title || 'Object Title';
-    description = description || 'Object Description';
+    title = title || 'Title';
+    description = description || 'Description';
     dueDate = dueDate || format(new Date(), 'MM/dd/yyyy');
-    priority = priority || 'Priority';
+    priority = priority || 'default';
     let completeStatus = false;
+    let notes = [];
+    let checklists = [];
 
-    return { title, description, dueDate, priority, completeStatus};
+    return { 
+        title, 
+        description, 
+        dueDate, 
+        priority, 
+        completeStatus,
+        notes,
+        checklists
+    };
+
 };
 
 
@@ -45,7 +60,22 @@ const projectInterface = (() => {
 
     const getCurrentProject = () => currentProject;
 
-    return {create, setCurrentProject, getCurrentProject, ProjectArray};
+    let currentToggle;
+
+    const setToggle = (option) => currentToggle = option;
+
+    const getToggle = () => currentToggle;
+
+
+    return {
+        create, 
+        setCurrentProject, 
+        getCurrentProject, 
+        ProjectArray,
+        setToggle,
+        getToggle,
+    };
+
 })();
 
 
@@ -69,7 +99,7 @@ const TODOInterface = (() => {
     // read the TODO and write to DOM
     const read = (object) => {
         TODOContent.create(object);
-        TODOContent.update(object);
+        // TODOContent.update(object);
     };
 
     // update TODO fields
@@ -89,13 +119,13 @@ const TODOInterface = (() => {
             object.dueDate = value || format(new Date(), 'MM/dd/yyyy');
             // update DOM
             return object.dueDate;
-        } else if (property == 'priority') {
-            object.priority = value || 'Priority';
-            // update DOM
-            return object.priority;
         }
 
     };
+
+    const setPriority = (option) => currentTODO.priority = option;
+
+    const getPriority = () => currentTODO.priority;
 
     const deleteTODO = (object) => {
         const project = projectInterface.getCurrentProject();
@@ -121,19 +151,50 @@ const TODOInterface = (() => {
 
     const getTODOStatus = (TODO) => TODO.completeStatus;
 
+    const addNotes = (TODO, value) => {
+        // add individual note item into the notes array
+        TODO.notes.push(value);
+
+        // return the array index for the individual note
+        return TODO.notes.length - 1;
+    };
+
+    const addChecklist = (TODO) => {
+        // add individual checklist array into the checklists array
+        TODO.checklists.push([]);
+        
+        // return the array index for the individual checklist
+        return TODO.checklists.length - 1;
+    };
+
+    const addItemToChecklist = (TODO, index, value) => {
+        // add individual checklist item into the checklist of the checklists array
+        TODO.checklists[index].push(value);
+
+        return TODO.checklists[index].length - 1;
+    };
+
+
     return {
         create, 
         read, 
         update, 
+        setPriority, 
+        getPriority,
         deleteTODO, 
         setCurrentTODO, 
         getCurrentTODO, 
         changeTODOStatus,
         getTODOStatus,
+        addNotes,
+        addChecklist,
+        addItemToChecklist
     };
+
 })();
 
 
 export {
-    TODOInterface, projectInterface
+    TODOInterface, 
+    projectInterface
 };

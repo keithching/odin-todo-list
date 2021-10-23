@@ -6,6 +6,7 @@ import {TODOInterface, projectInterface} from './application';
 import {projectContent, TODOContent, sidebar} from './DOM';
 
 
+const initializePage = (() => {
 
 // initialize common DOM
 loadCommonTemplate();
@@ -13,12 +14,19 @@ loadCommonTemplate();
 // initialize project DOM
 loadProjectTemplate();
 
+})();
+
 // create a Project when button clicked
-document.querySelector('.BtnAddProject').addEventListener('click', () => {
-    const project = projectInterface.create();
-    projectInterface.setCurrentProject(project);
-    sidebar.create();
-    projectContent.create(projectInterface.getCurrentProject());
-});
+const createProject = (() => {
 
-
+    document.querySelector('.BtnAddProject').addEventListener('click', () => {
+        const project = projectInterface.create();
+        projectInterface.setCurrentProject(project);
+        sidebar.create();
+        projectContent.create(projectInterface.getCurrentProject());
+    
+        // assign toggle to show All
+        projectContent.resetToggle();
+    });
+    
+})();
