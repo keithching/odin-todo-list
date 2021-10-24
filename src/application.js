@@ -159,6 +159,13 @@ const TODOInterface = (() => {
         return TODO.notes.length - 1;
     };
 
+    const deleteNotes = (TODO, index) => {
+
+        // remove the item off the array
+        TODO.notes.splice(index, 1);
+
+    };
+
     const addChecklist = (TODO) => {
         // add individual checklist array into the checklists array
         TODO.checklists.push([]);
@@ -167,11 +174,26 @@ const TODOInterface = (() => {
         return TODO.checklists.length - 1;
     };
 
-    const addItemToChecklist = (TODO, index, value) => {
-        // add individual checklist item into the checklist of the checklists array
-        TODO.checklists[index].push(value);
+    const deleteChecklist = (TODO, index) => {
 
-        return TODO.checklists[index].length - 1;
+        TODO.checklists.splice(index, 1);
+
+    };
+
+
+    const addItemToChecklist = (TODO, checklistIndex) => {
+        // add individual checklist item into the checklist of the checklists array
+        const defaultValue = 'start typing here';
+
+        TODO.checklists[checklistIndex].push(defaultValue);
+
+        return TODO.checklists[checklistIndex].length - 1;
+    };
+
+    const getChecklistItemValue = (TODO, checklistIndex, itemIndex) => {
+
+        return TODO.checklists[checklistIndex][itemIndex];
+
     };
 
 
@@ -187,8 +209,11 @@ const TODOInterface = (() => {
         changeTODOStatus,
         getTODOStatus,
         addNotes,
+        deleteNotes,
         addChecklist,
-        addItemToChecklist
+        deleteChecklist,
+        addItemToChecklist,
+        getChecklistItemValue
     };
 
 })();

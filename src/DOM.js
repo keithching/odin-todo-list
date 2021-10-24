@@ -2,11 +2,7 @@ import {TODOInterface, projectInterface} from './application';
 import {loadProjectTemplate} from './projectTemplate';
 import {loadTODOTemplate} from './TODOTemplate';
 import { parse, isDate, getDate, getMonth, getYear } from 'date-fns';
-
 import TrashIcon from './trash.svg';
-import CircleIcon from './circle.svg';
-import CircleHalfFillIcon from './circle-half.svg';
-import CircleFillIcon from './circle-fill.svg';
 
 
 // show the individual project's TODO as card
@@ -127,15 +123,6 @@ const projectContent = (() => {
                 // PRIORITY
                 const priority = TODO.priority;
 
-                if (priority == 'default') {
-                    card.classList.add('card_priorityDefault');
-                } else if (priority == 'medium') {
-                    card.classList.add('card_priorityMedium');
-                } else if (priority == 'high') {
-                    card.classList.add('card_priorityHigh');
-                }
-
-            
                 // STATUS
                 const status = document.createElement('div');
                 status.classList.add('card_status');
@@ -144,6 +131,21 @@ const projectContent = (() => {
                 } else {
                     status.textContent = 'Done';
                 }
+
+                // Display card colors by priority catergory and status
+
+                if (TODO.completeStatus == true) {
+                    card.classList.add('card_statusComplete');
+                } else {
+                    if (priority == 'default') {
+                        card.classList.add('card_priorityDefault');
+                    } else if (priority == 'medium') {
+                        card.classList.add('card_priorityMedium');
+                    } else if (priority == 'high') {
+                        card.classList.add('card_priorityHigh');
+                    }    
+                }
+               
 
                 card.appendChild(status);
 
@@ -383,9 +385,7 @@ const TODOContent = (() => {
             }
         });
 
-
-
-
+        
         topRightBottom.appendChild(priorityDisplay);
 
         // STATUS DISPLAY
@@ -440,18 +440,35 @@ const TODOContent = (() => {
 
         addNotes.addEventListener('click', () => {
 
-            // add property to object
+            // create a note card
             const index = TODOInterface.addNotes(object, 'start typing here');
-            const notesCard = document.createElement('span');
+            const notesCard = document.createElement('div');
             notesCard.setAttribute('data-note-index', index);
-            notesCard.setAttribute('role', 'textbox');
-            notesCard.setAttribute('contenteditable', true);
             notesCard.classList.add('TODO_notesCard');
 
-            notesCard.textContent = object.notes[index];
+            // add a delete button 
+            const cardDeleteBtn = document.createElement('p');
+            cardDeleteBtn.classList.add('TODO_notesCard_del');
+            cardDeleteBtn.textContent = '-';
+            cardDeleteBtn.addEventListener('click', () => {
+                // remove from object
+                TODOInterface.deleteNotes(object, notesCard.getAttribute('data-note-index'));
+                // remove from DOM
+                notesCard.remove();
+            });
 
-            notesCard.onblur = () => object.notes[index] = notesCard.textContent;
+            // add property to object
+            const notesCardText = document.createElement('span');
+            notesCardText.setAttribute('role', 'textbox');
+            notesCardText.setAttribute('contenteditable', true);
+            notesCardText.classList.add('TODO_notesCard_text');
 
+            notesCardText.textContent = object.notes[index];
+
+            notesCardText.onblur = () => object.notes[index] = notesCardText.textContent;
+
+            notesCard.appendChild(cardDeleteBtn);
+            notesCard.appendChild(notesCardText);
             notesCards.appendChild(notesCard);
 
         });
@@ -459,15 +476,30 @@ const TODOContent = (() => {
         // write the existing notes into DOM if available
         object.notes.forEach(note => {
 
-            const notesCard = document.createElement('span');
+            const notesCard = document.createElement('div');
             notesCard.classList.add('TODO_notesCard');
             notesCard.setAttribute('data-note-index', object.notes.indexOf(note));
-            notesCard.setAttribute('role', 'textbox');
-            notesCard.setAttribute('contenteditable', true);
-            notesCard.classList.add('TODO_notesCard');
 
-            notesCard.textContent = note;
+            // add a delete button 
+            const cardDeleteBtn = document.createElement('p');
+            cardDeleteBtn.classList.add('TODO_notesCard_del');
+            cardDeleteBtn.textContent = '-';
+            cardDeleteBtn.addEventListener('click', () => {
+                // remove from object
+                TODOInterface.deleteNotes(object, notesCard.getAttribute('data-note-index'));
+                // remove from DOM
+                notesCard.remove();
+            });
 
+            const notesCardText = document.createElement('span');
+            notesCardText.setAttribute('role', 'textbox');
+            notesCardText.setAttribute('contenteditable', true);
+            notesCardText.classList.add('TODO_notesCard_text');
+
+            notesCardText.textContent = note;
+
+            notesCard.appendChild(cardDeleteBtn);
+            notesCard.appendChild(notesCardText);
             notesCards.appendChild(notesCard);
 
         });
@@ -499,18 +531,28 @@ const TODOContent = (() => {
             checklistCard.classList.add('TODO_checklistCard');
             checklistCard.setAttribute('data-checklist-index', checklistIndex);
 
+            // add a delete button 
+            const cardDeleteBtn = document.createElement('p');
+            cardDeleteBtn.classList.add('TODO_checklistCard_del');
+            cardDeleteBtn.textContent = '-';
+            cardDeleteBtn.addEventListener('click', () => {
+                // remove from object
+                TODOInterface.deleteChecklist(object, checklistCard.getAttribute('data-note-index'));
+                // remove from DOM
+                checklistCard.remove();
+            });
+
             const checklistCardAddItem = document.createElement('p');
             checklistCardAddItem.classList.add('TODO_checklistCard_addItem');
             checklistCardAddItem.textContent = '+ item';
 
+            checklistCard.appendChild(cardDeleteBtn);
             checklistCard.appendChild(checklistCardAddItem);
 
             checklistCardAddItem.addEventListener('click', () => {
-                
-                const checklistItemValue = 'start typing here';
 
                 // push item into checklist array of the TODO object
-                const itemIndex = TODOInterface.addItemToChecklist(object, checklistIndex, checklistItemValue);
+                const itemIndex = TODOInterface.addItemToChecklist(object, checklistIndex);
 
                 // write to DOM
                 const checklistItemGroup = document.createElement('div');
@@ -525,7 +567,7 @@ const TODOContent = (() => {
                 checklistItem.setAttribute('role', 'textbox');
                 checklistItem.setAttribute('contenteditable', true);
 
-                checklistItem.textContent = checklistItemValue;
+                checklistItem.textContent = TODOInterface.getChecklistItemValue(object, checklistIndex, itemIndex);
 
                 checklistItem.onblur = () => object.checklists[checklistIndex][itemIndex] = checklistItem.textContent;
 
@@ -550,16 +592,28 @@ const TODOContent = (() => {
             checklistCard.classList.add('TODO_checklistCard');
             checklistCard.setAttribute('data-checklist-index', object.checklists.indexOf(checklist));
 
+            // add a delete button 
+            const cardDeleteBtn = document.createElement('p');
+            cardDeleteBtn.classList.add('TODO_checklistCard_del');
+            cardDeleteBtn.textContent = '-';
+            cardDeleteBtn.addEventListener('click', () => {
+                // remove from object
+                TODOInterface.deleteChecklist(object, checklistCard.getAttribute('data-note-index'));
+                // remove from DOM
+                checklistCard.remove();
+            });
+
             const checklistCardAddItem = document.createElement('p');
             checklistCardAddItem.classList.add('TODO_checklistCard_addItem');
             checklistCardAddItem.textContent = '+ item';
 
+            checklistCard.appendChild(cardDeleteBtn);
             checklistCard.appendChild(checklistCardAddItem);
 
             checklistCardAddItem.addEventListener('click', () => {
-                
+
                 // push item into checklist array of the TODO object
-                const itemIndex = TODOInterface.addItemToChecklist(object, object.checklists.indexOf(checklist), checklistItemValue);
+                const itemIndex = TODOInterface.addItemToChecklist(object, object.checklists.indexOf(checklist));
 
                 // write to DOM
                 const checklistItemGroup = document.createElement('div');
@@ -574,7 +628,7 @@ const TODOContent = (() => {
                 checklistItem.setAttribute('role', 'textbox');
                 checklistItem.setAttribute('contenteditable', true);
 
-                checklistItem.textContent = checklistItemValue;
+                checklistItem.textContent = TODOInterface.getChecklistItemValue(object, checklistIndex, itemIndex);
 
                 checklistItem.onblur = () => object.checklists[checklistIndex][itemIndex] = checklistItem.textContent;
 

@@ -416,6 +416,10 @@ body {
     background-color: rgba(255, 105, 180, 0.3);
 }
 
+.card_statusComplete {
+    background-color: rgba(251, 225, 81, 0.6);
+}
+
 
 .card_status {
     margin-top: 10px;
@@ -501,16 +505,28 @@ body {
     min-height: 200px;
     display: flex;
     flex-direction: column;
-    padding: 20px;
-    cursor: pointer; 
+    padding: 10px 20px 20px 20px;
+    /* cursor: pointer;  */
     transition: all 0.3s;
     box-shadow: 0 3px 8px 0.5px rgba(0, 0, 0, 0.2);
     border-radius: 15px;
     margin: 0;
+}
 
-    border-style: none;
-    outline: none;
-    background-color: transparent;
+.TODO_notesCard_del,
+.TODO_checklistCard_del {
+    cursor: pointer;
+    margin: 0;
+    text-align: end;
+    opacity: 0.3;
+    transition: all 0.3s;
+    font-size: 20px;
+}
+
+.TODO_notesCard_del:hover,
+.TODO_checklistCard_del:hover {
+    opacity: 1.0;
+    color: red;
 }
 
 
@@ -531,9 +547,15 @@ body {
     margin-top: 6px;
 }
 
+.TODO_notesCard_text,
 .TODO_checklistCard_checklistItem {
+    cursor: pointer;
     margin: 0;
     border-style: none;
     outline: none;
     background-color: transparent;
+}
+
+.TODO_checklistCard_addItem {
+    cursor: pointer;
 }
