@@ -3,6 +3,9 @@ import {loadProjectTemplate} from './projectTemplate';
 import {loadTODOTemplate} from './TODOTemplate';
 import { parse, isDate, getDate, getMonth, getYear } from 'date-fns';
 import TrashIcon from './trash.svg';
+import GearIcon from './gear.svg';
+import TypeIcon from './type.svg';
+import CloseIcon from './x.svg';
 
 
 // show the individual project's TODO as card
@@ -77,6 +80,9 @@ const projectContent = (() => {
         project.TODOarray.forEach(TODO => {
             makeCard(TODO);
         });
+
+        // create a function button for renaming project and delete project
+        projectContent.createFunctionButton();
 
     };
 
@@ -213,12 +219,100 @@ const projectContent = (() => {
         showAll.classList.add('currentShowSelection');
     };
 
+    const createFunctionButton = () => {
+
+        const right = document.querySelector('.right');
+
+        const container = document.querySelector('.right .container');
+
+        const functionButtonContainer = document.createElement('div');
+        functionButtonContainer.classList.add('PROJECT_functionButton_container');
+
+        const functionButton = document.createElement('div');
+        functionButton.classList.add('PROJECT_functionButton');
+
+        const functionButtonText = new Image();
+        const functionButtonText1 = new Image();
+        const functionButtonText2 = new Image();
+
+        functionButtonText1.src = GearIcon;
+
+        // functionButton.appendChild(functionButtonText);
+        functionButton.appendChild(functionButtonText1);
+        // functionButton.appendChild(functionButtonText2);
+
+        functionButtonContainer.appendChild(functionButton);
+
+        // insert after container, before footer
+        right.insertBefore(functionButtonContainer, container.nextSibling);
+
+        let clickCounter = 0;
+
+        functionButtonText1.addEventListener('click', () => {
+            if (clickCounter == 1) {
+                functionButtonText.remove();
+                functionButtonText1.src = GearIcon;
+                functionButtonText2.remove();
+
+                clickCounter = 0;
+            } else if (clickCounter == 0) {
+                
+                functionButtonText.src = TypeIcon;
+                functionButtonText1.src = CloseIcon;
+                functionButtonText2.src = TrashIcon;
+    
+                functionButton.insertBefore(functionButtonText, functionButtonText1);
+                functionButton.appendChild(functionButtonText2);
+    
+                // testing
+                functionButtonText.addEventListener('click', () => {
+
+                    const currentProject = projectInterface.getCurrentProject();
+
+                    // prompt for user input
+                    let newProjectName = prompt('New Project Name', currentProject.name);
+
+                    // if cancel , do nothing
+                    if (newProjectName) {
+                        projectInterface.updateName(currentProject, newProjectName);
+
+                        sidebar.updateProjectName(currentProject.name);
+                    }
+
+                });
+
+                functionButtonText2.addEventListener('click', () => {
+
+                    const currentProject = projectInterface.getCurrentProject();
+
+                    let confirmRemove = confirm(`confirm remove project ${currentProject.name}?`);
+
+                    if (confirmRemove) {
+                        sidebar.deleteProject();
+                        projectInterface.removeProject(currentProject);
+                        // clear existing DOM
+                        const right = document.querySelector('.right');
+                        let child = right.lastElementChild; 
+                        while (child) {
+                            right.removeChild(child);
+                            child = right.lastElementChild;
+                        }
+                    }
+
+                });
+
+                clickCounter = 1;
+            }
+        });
+
+    };
 
     return { 
         create, 
         makeCard, 
         filterCards, 
         resetToggle,
+        createFunctionButton
     };
 })();
 
@@ -258,7 +352,7 @@ const TODOContent = (() => {
         titleText.textContent = object.title;
 
         titleText.onblur = () => {
-            object.title = titleText.textContent;
+            TODOInterface.update(object, 'title', titleText.textContent);
             sidebar.updateTODO(object);
         };
     
@@ -275,7 +369,9 @@ const TODOContent = (() => {
         descriptionText.setAttribute('role', 'textbox');
         descriptionText.setAttribute('contenteditable', true);
         descriptionText.textContent = object.description;
-        descriptionText.onblur = () => object.description = descriptionText.textContent;
+        descriptionText.onblur = () => {
+            TODOInterface.update(object, 'description', descriptionText.textContent);
+        };
 
         description.appendChild(descriptionText);
         topLeft.appendChild(description);
@@ -299,7 +395,8 @@ const TODOContent = (() => {
             if (newDate != 'Invalid Date') {
                 dueDateText.classList.remove('error');
                 dueDateErrorMessage.classList.add('dueDateErrorMessage_hide');
-                object.dueDate = dueDateText.value;
+                TODOInterface.update(object, 'dueDate', dueDateText.value);
+
             } else {
                 dueDateErrorMessage.classList.remove('dueDateErrorMessage_hide');
                 dueDateText.classList.add('error');
@@ -319,8 +416,12 @@ const TODOContent = (() => {
                     if (newDate != 'Invalid Date') {
                         dueDateText.classList.remove('error');
                         dueDateErrorMessage.classList.add('dueDateErrorMessage_hide');
-                        object.dueDate = dueDateText.value;
+                        TODOInterface.update(object, 'dueDate', dueDateText.value);
                         dueDateText.blur();
+
+                        // save to localStorage
+                        projectInterface.saveToLocalStorage(); 
+
                     } else {
                         dueDateErrorMessage.classList.remove('dueDateErrorMessage_hide');
                         dueDateText.classList.add('error');
@@ -385,7 +486,7 @@ const TODOContent = (() => {
             }
         });
 
-        
+
         topRightBottom.appendChild(priorityDisplay);
 
         // STATUS DISPLAY
@@ -465,7 +566,9 @@ const TODOContent = (() => {
 
             notesCardText.textContent = object.notes[index];
 
-            notesCardText.onblur = () => object.notes[index] = notesCardText.textContent;
+            notesCardText.onblur = () => {
+                TODOInterface.updateNotes(object, index, notesCardText.textContent);
+            };
 
             notesCard.appendChild(cardDeleteBtn);
             notesCard.appendChild(notesCardText);
@@ -497,6 +600,10 @@ const TODOContent = (() => {
             notesCardText.classList.add('TODO_notesCard_text');
 
             notesCardText.textContent = note;
+
+            notesCardText.onblur = () => {
+                TODOInterface.updateNotes(object, object.notes.indexOf(note), notesCardText.textContent);
+            };
 
             notesCard.appendChild(cardDeleteBtn);
             notesCard.appendChild(notesCardText);
@@ -537,7 +644,7 @@ const TODOContent = (() => {
             cardDeleteBtn.textContent = '-';
             cardDeleteBtn.addEventListener('click', () => {
                 // remove from object
-                TODOInterface.deleteChecklist(object, checklistCard.getAttribute('data-note-index'));
+                TODOInterface.deleteChecklist(object, checklistCard.getAttribute('data-checklist-index'));
                 // remove from DOM
                 checklistCard.remove();
             });
@@ -569,7 +676,9 @@ const TODOContent = (() => {
 
                 checklistItem.textContent = TODOInterface.getChecklistItemValue(object, checklistIndex, itemIndex);
 
-                checklistItem.onblur = () => object.checklists[checklistIndex][itemIndex] = checklistItem.textContent;
+                checklistItem.onblur = () => {
+                    TODOInterface.updateChecklistItem(object, checklistIndex, itemIndex, checklistItem.textContent);
+                };
 
                 checklistItemGroup.appendChild(checkbox);
                 checklistItemGroup.appendChild(checklistItem);
@@ -598,7 +707,7 @@ const TODOContent = (() => {
             cardDeleteBtn.textContent = '-';
             cardDeleteBtn.addEventListener('click', () => {
                 // remove from object
-                TODOInterface.deleteChecklist(object, checklistCard.getAttribute('data-note-index'));
+                TODOInterface.deleteChecklist(object, checklistCard.getAttribute('data-checklist-index'));
                 // remove from DOM
                 checklistCard.remove();
             });
@@ -630,7 +739,9 @@ const TODOContent = (() => {
 
                 checklistItem.textContent = TODOInterface.getChecklistItemValue(object, checklistIndex, itemIndex);
 
-                checklistItem.onblur = () => object.checklists[checklistIndex][itemIndex] = checklistItem.textContent;
+                checklistItem.onblur = () => {
+                    TODOInterface.updateChecklistItem(object, checklistIndex, itemIndex, checklistItem.textContent);
+                };
 
                 checklistItemGroup.appendChild(checkbox);
                 checklistItemGroup.appendChild(checklistItem);
@@ -656,6 +767,10 @@ const TODOContent = (() => {
                 checklistItem.setAttribute('contenteditable', true);
 
                 checklistItem.textContent = Item;
+
+                checklistItem.onblur = () => {
+                    TODOInterface.updateChecklistItem(object, object.checklists.indexOf(checklist), checklist.indexOf(Item), checklistItem.textContent);
+                };
     
                 checklistItemGroup.appendChild(checkbox);
                 checklistItemGroup.appendChild(checklistItem);
@@ -735,9 +850,44 @@ const sidebar = (() => {
             // create the project DOM content
             projectContent.create(projectInterface.getCurrentProject());
 
+            // hightlight the project at sidebar
+            sidebar.highlightCurrentProject();
+
         });
 
 
+
+        // create the TODO displays if available
+        currentProject.TODOarray.forEach(TODO => {
+
+            const todoDisplay = document.createElement('div');
+            todoDisplay.classList.add('TODO_display');
+            todoDisplay.setAttribute('data-project-index', projectInterface.ProjectArray.indexOf(currentProject));
+            todoDisplay.setAttribute('data-todo-index', projectInterface.getCurrentProject().TODOarray.indexOf(TODO));     
+            todoDisplay.textContent = projectInterface.getCurrentProject().TODOarray[todoDisplay.getAttribute('data-todo-index')].title;
+
+            todoDisplay.addEventListener('click', () => {
+                // set the clicked TODO to be the current TODO
+                TODOInterface.setCurrentTODO(projectInterface.ProjectArray[addTODO.getAttribute('data-project-index')].TODOarray[todoDisplay.getAttribute('data-todo-index')]);
+
+                TODOInterface.read(TODOInterface.getCurrentTODO());
+
+                // highlight the current selected TODO
+                sidebar.highlightCurrentTODO();
+
+            });
+
+            projectDisplay.append(todoDisplay);
+
+            // add a card to the container
+            if (document.querySelector('.right .container')) {
+                if (document.querySelector('.right .container').getAttribute('data-project-index') == projectInterface.ProjectArray.indexOf(projectInterface.getCurrentProject())) {
+                    projectContent.makeCard(TODO);    
+                }
+            }
+
+        });
+        
         // create the add TODO DOM
         const addTODO = document.createElement('div');
         addTODO.classList.add('addTODO');
@@ -793,6 +943,16 @@ const sidebar = (() => {
 
     };
 
+    const updateProjectName = (name) => {
+
+        const currentProjectName = document.querySelector('.PROJECT_display_text_current');
+
+        // update DOM
+        currentProjectName.textContent = name;
+
+    };
+
+
     // update TODO arrays, refreshing DOM
     const updateTODO = (object) => {
 
@@ -804,6 +964,23 @@ const sidebar = (() => {
 
         // update the title at sidebar DOM
         currentTODO.textContent = projectInterface.getCurrentProject().TODOarray[TODOIndex].title;
+
+    };
+
+    const highlightCurrentProject = () => {
+        const currentProject = projectInterface.getCurrentProject();
+
+        const projectDisplays = document.querySelectorAll('.PROJECT_display');
+
+        projectDisplays.forEach(projectDisplay => {
+
+            if (projectDisplay.getAttribute('data-project-index') == projectInterface.ProjectArray.indexOf(currentProject)) {
+                projectDisplay.querySelector('.PROJECT_display_text').classList.add('PROJECT_display_text_current');
+            } else {
+                projectDisplay.querySelector('.PROJECT_display_text').classList.remove('PROJECT_display_text_current');
+            }
+
+        });
 
     };
 
@@ -846,6 +1023,28 @@ const sidebar = (() => {
         });
 
     };
+
+    const deleteProject = () => {
+
+        const projectIndex = projectInterface.ProjectArray.indexOf(projectInterface.getCurrentProject());
+
+        const currentProject = document.querySelector(`.PROJECT_display[data-project-index='${projectIndex}']`);
+
+        currentProject.remove();
+
+        // reassign the data-todo-index to the current project's TODO
+        const Projects = document.querySelectorAll(`.PROJECT_display[data-project-index]`);
+
+        // reassign consecutively
+        let i = 0;
+
+        Projects.forEach(Project => {
+            Project.setAttribute('data-project-index', i);
+            i++;
+        });
+
+    };
+
 
     const deleteTODO = (object) => {
 
@@ -891,9 +1090,12 @@ const sidebar = (() => {
 
     return {
         create, 
+        updateProjectName,
         updateTODO, 
+        highlightCurrentProject,
         highlightCurrentTODO, 
         removeHighlightOfTODO, 
+        deleteProject,
         deleteTODO, 
         updateTODOCounter
     };

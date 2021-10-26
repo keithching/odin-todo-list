@@ -4,7 +4,7 @@ import { format } from 'date-fns'
 // factory function for project creation
 const ProjectFactory = (name) => {
 
-    name = name || 'Project Name';
+    name = name || 'My Project';
 
     // an array to control how many TODO objects are there
     let TODOarray = [];
@@ -52,7 +52,12 @@ const projectInterface = (() => {
     // create a new project object
     const create = () => {
         const Project = ProjectFactory('My Project');
-        ProjectArray.push(Project);
+
+        projectInterface.ProjectArray.push(Project);
+
+        // save to localStorage
+        projectInterface.saveToLocalStorage();
+
         return Project;
     };
 
@@ -66,6 +71,27 @@ const projectInterface = (() => {
 
     const getToggle = () => currentToggle;
 
+    const updateName = (project, name) => {
+        project.name = name || 'My Project';
+
+        // save to localStorage
+        projectInterface.saveToLocalStorage();
+    };
+    
+    const removeProject = (project) => {
+
+        const projectIndex = projectInterface.ProjectArray.indexOf(project);
+        projectInterface.ProjectArray.splice(projectIndex, 1);
+
+        // save to localStorage
+        projectInterface.saveToLocalStorage();
+    };
+    
+    const saveToLocalStorage = () => {
+        // save to localStorage
+        localStorage.setItem('ProjectArray', JSON.stringify(projectInterface.ProjectArray));
+    };
+
 
     return {
         create, 
@@ -74,6 +100,9 @@ const projectInterface = (() => {
         ProjectArray,
         setToggle,
         getToggle,
+        updateName,
+        removeProject,
+        saveToLocalStorage
     };
 
 })();
@@ -93,13 +122,15 @@ const TODOInterface = (() => {
         // push TODO into the current Project's TODO array
         project.TODOarray.push(TODO);
 
+        // save to localStorage
+        projectInterface.saveToLocalStorage();
+        
         return TODO;
     };
 
     // read the TODO and write to DOM
     const read = (object) => {
         TODOContent.create(object);
-        // TODOContent.update(object);
     };
 
     // update TODO fields
@@ -107,23 +138,43 @@ const TODOInterface = (() => {
 
         if (property == 'title') {
             object.title = value || 'Object Title';
+
+            // save to localStorage
+            projectInterface.saveToLocalStorage(); 
+
             // update DOM
             return object.title;
 
         } else if (property == 'description') {
             object.description = value || 'Object Description';
+
+            // save to localStorage
+            projectInterface.saveToLocalStorage(); 
+
             // update DOM
             return object.description;
 
         } else if (property == 'dueDate') {
             object.dueDate = value || format(new Date(), 'MM/dd/yyyy');
+
+            // save to localStorage
+            projectInterface.saveToLocalStorage(); 
+
             // update DOM
             return object.dueDate;
         }
 
+
+
     };
 
-    const setPriority = (option) => currentTODO.priority = option;
+    const setPriority = (option) => {
+        currentTODO.priority = option;
+        
+        // save to localStorage
+        projectInterface.saveToLocalStorage(); 
+
+    };
 
     const getPriority = () => currentTODO.priority;
 
@@ -135,6 +186,9 @@ const TODOInterface = (() => {
 
         // delete the TODO from array
         projectInterface.ProjectArray[projectIndex].TODOarray.splice(index, 1);
+
+        // save to localStorage
+        projectInterface.saveToLocalStorage(); 
     };
 
     const setCurrentTODO = (TODO) => currentTODO = TODO;
@@ -147,6 +201,9 @@ const TODOInterface = (() => {
         } else {
             TODO.completeStatus = false;
         }
+        // save to localStorage
+        projectInterface.saveToLocalStorage(); 
+
     };
 
     const getTODOStatus = (TODO) => TODO.completeStatus;
@@ -155,8 +212,19 @@ const TODOInterface = (() => {
         // add individual note item into the notes array
         TODO.notes.push(value);
 
+        // save to localStorage
+        projectInterface.saveToLocalStorage();
+
         // return the array index for the individual note
         return TODO.notes.length - 1;
+    };
+
+    const updateNotes = (TODO, index, value) => {
+
+        TODO.notes[index] = value;
+
+        // save to localStorage
+        projectInterface.saveToLocalStorage();
     };
 
     const deleteNotes = (TODO, index) => {
@@ -164,12 +232,18 @@ const TODOInterface = (() => {
         // remove the item off the array
         TODO.notes.splice(index, 1);
 
+        // save to localStorage
+        projectInterface.saveToLocalStorage();
+
     };
 
     const addChecklist = (TODO) => {
         // add individual checklist array into the checklists array
         TODO.checklists.push([]);
         
+        // save to localStorage
+        projectInterface.saveToLocalStorage(); 
+
         // return the array index for the individual checklist
         return TODO.checklists.length - 1;
     };
@@ -177,6 +251,9 @@ const TODOInterface = (() => {
     const deleteChecklist = (TODO, index) => {
 
         TODO.checklists.splice(index, 1);
+
+        // save to localStorage
+        projectInterface.saveToLocalStorage();
 
     };
 
@@ -187,8 +264,21 @@ const TODOInterface = (() => {
 
         TODO.checklists[checklistIndex].push(defaultValue);
 
+        // save to localStorage
+        projectInterface.saveToLocalStorage();
+
         return TODO.checklists[checklistIndex].length - 1;
     };
+
+    const updateChecklistItem = (TODO, checklistIndex, itemIndex, value) => {
+
+        TODO.checklists[checklistIndex][itemIndex] = value;
+
+        // save to localStorage
+        projectInterface.saveToLocalStorage();
+
+    };
+
 
     const getChecklistItemValue = (TODO, checklistIndex, itemIndex) => {
 
@@ -209,10 +299,12 @@ const TODOInterface = (() => {
         changeTODOStatus,
         getTODOStatus,
         addNotes,
+        updateNotes,
         deleteNotes,
         addChecklist,
         deleteChecklist,
         addItemToChecklist,
+        updateChecklistItem,
         getChecklistItemValue
     };
 
