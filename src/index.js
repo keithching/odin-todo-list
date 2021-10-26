@@ -74,7 +74,7 @@ const createProject = (() => {
 
     document.querySelector('.BtnAddProject').addEventListener('click', () => {
 
-        const project = projectInterface.create();
+        const project = projectInterface.createProject();
         projectInterface.setCurrentProject(project);
         sidebar.create();
         projectContent.create(projectInterface.getCurrentProject());
@@ -82,8 +82,6 @@ const createProject = (() => {
         // assign toggle to show All
         projectContent.resetToggle();
 
-        // // create a function button for renaming project and delete project
-        // projectContent.createFunctionButton();
     });
     
 })();

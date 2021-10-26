@@ -385,7 +385,7 @@ body {
     justify-content: center;
     box-shadow: 0 3px 8px 0.5px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    background-color: lightgrey;
+    background-color: rgba(211, 211, 211, 0.6);
     border-style: none;
     border-radius: 25px;
     transition: all 0.3s;
@@ -552,7 +552,6 @@ body {
     display: flex;
     flex-direction: column;
     padding: 10px 20px 20px 20px;
-    /* cursor: pointer;  */
     transition: all 0.3s;
     box-shadow: 0 3px 8px 0.5px rgba(0, 0, 0, 0.2);
     border-radius: 15px;

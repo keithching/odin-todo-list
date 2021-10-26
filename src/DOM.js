@@ -45,7 +45,7 @@ const projectContent = (() => {
             projectInterface.setCurrentProject(projectInterface.ProjectArray[projectDisplay.getAttribute('data-project-index')]);
 
             // current a new TODO
-            const TODO = TODOInterface.create();
+            const TODO = TODOInterface.createTODO();
 
             // add to sidebar
             const todoDisplay = document.createElement('div');
@@ -170,6 +170,7 @@ const projectContent = (() => {
             }
     };
 
+    // filter the cards at DOM according to the toggle selection
     const filterCards = () => {
 
         let filteredArray = [];
@@ -204,6 +205,7 @@ const projectContent = (() => {
         });
     };
 
+    // reset the toggle selection 
     const resetToggle = () => {
 
         const toggle = document.querySelector('.toggle');
@@ -219,6 +221,7 @@ const projectContent = (() => {
         showAll.classList.add('currentShowSelection');
     };
 
+    // create function button to handle project renaming and deletion
     const createFunctionButton = () => {
 
         const right = document.querySelector('.right');
@@ -237,9 +240,7 @@ const projectContent = (() => {
 
         functionButtonText1.src = GearIcon;
 
-        // functionButton.appendChild(functionButtonText);
         functionButton.appendChild(functionButtonText1);
-        // functionButton.appendChild(functionButtonText2);
 
         functionButtonContainer.appendChild(functionButton);
 
@@ -255,6 +256,8 @@ const projectContent = (() => {
                 functionButtonText2.remove();
 
                 clickCounter = 0;
+
+
             } else if (clickCounter == 0) {
                 
                 functionButtonText.src = TypeIcon;
@@ -263,47 +266,50 @@ const projectContent = (() => {
     
                 functionButton.insertBefore(functionButtonText, functionButtonText1);
                 functionButton.appendChild(functionButtonText2);
-    
-                // testing
-                functionButtonText.addEventListener('click', () => {
-
-                    const currentProject = projectInterface.getCurrentProject();
-
-                    // prompt for user input
-                    let newProjectName = prompt('New Project Name', currentProject.name);
-
-                    // if cancel , do nothing
-                    if (newProjectName) {
-                        projectInterface.updateName(currentProject, newProjectName);
-
-                        sidebar.updateProjectName(currentProject.name);
-                    }
-
-                });
-
-                functionButtonText2.addEventListener('click', () => {
-
-                    const currentProject = projectInterface.getCurrentProject();
-
-                    let confirmRemove = confirm(`confirm remove project ${currentProject.name}?`);
-
-                    if (confirmRemove) {
-                        sidebar.deleteProject();
-                        projectInterface.removeProject(currentProject);
-                        // clear existing DOM
-                        const right = document.querySelector('.right');
-                        let child = right.lastElementChild; 
-                        while (child) {
-                            right.removeChild(child);
-                            child = right.lastElementChild;
-                        }
-                    }
-
-                });
 
                 clickCounter = 1;
             }
         });
+
+        // project renaming
+        functionButtonText.addEventListener('click', () => {
+
+            const currentProject = projectInterface.getCurrentProject();
+
+            // prompt for user input
+            let newProjectName = prompt('New Project Name', currentProject.name);
+
+            // if cancel , do nothing
+            if (newProjectName) {
+                projectInterface.updateName(currentProject, newProjectName);
+
+                sidebar.updateProjectName(currentProject.name);
+            }
+
+        });
+
+        // project deletion
+        functionButtonText2.addEventListener('click', () => {
+
+            const currentProject = projectInterface.getCurrentProject();
+
+            let confirmRemove = confirm(`confirm remove project ${currentProject.name}?`);
+
+            if (confirmRemove) {
+                sidebar.deleteProject();
+                projectInterface.removeProject(currentProject);
+                // clear existing DOM
+                const right = document.querySelector('.right');
+                let child = right.lastElementChild; 
+                while (child) {
+                    right.removeChild(child);
+                    child = right.lastElementChild;
+                }
+            }
+
+        });
+
+
 
     };
 
@@ -792,15 +798,8 @@ const TODOContent = (() => {
         bottom.appendChild(bottomRight);
     };
 
-  
-    const changeStatus = (object) => {
 
-        // update the object property's value
-        TODOInterface.changeTODOStatus(object);
-    };
-
-
-    return {create, changeStatus};
+    return {create};
 })();
 
 
@@ -855,8 +854,6 @@ const sidebar = (() => {
 
         });
 
-
-
         // create the TODO displays if available
         currentProject.TODOarray.forEach(TODO => {
 
@@ -904,7 +901,7 @@ const sidebar = (() => {
             projectInterface.setCurrentProject(projectInterface.ProjectArray[addTODO.getAttribute('data-project-index')]);
 
             // current a new TODO
-            const TODO = TODOInterface.create();
+            const TODO = TODOInterface.createTODO();
 
             const todoDisplay = document.createElement('div');
             todoDisplay.classList.add('TODO_display');
@@ -986,7 +983,6 @@ const sidebar = (() => {
 
     const highlightCurrentTODO = () => {
 
-        // const currentProject = projectInterface.getCurrentProject();
         const currentTODO = TODOInterface.getCurrentTODO();
 
         // set the currentTODO's project as the current Project

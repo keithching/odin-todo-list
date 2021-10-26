@@ -50,7 +50,7 @@ const projectInterface = (() => {
     let currentProject;
 
     // create a new project object
-    const create = () => {
+    const createProject = () => {
         const Project = ProjectFactory('My Project');
 
         projectInterface.ProjectArray.push(Project);
@@ -94,7 +94,7 @@ const projectInterface = (() => {
 
 
     return {
-        create, 
+        createProject, 
         setCurrentProject, 
         getCurrentProject, 
         ProjectArray,
@@ -114,7 +114,7 @@ const TODOInterface = (() => {
     let currentTODO;
 
     // create a TODO object under the current Project object
-    const create = () => {
+    const createTODO = () => {
         const project = projectInterface.getCurrentProject();
 
         const TODO = TODOFactory('', '', '', '');
@@ -163,8 +163,6 @@ const TODOInterface = (() => {
             // update DOM
             return object.dueDate;
         }
-
-
 
     };
 
@@ -288,7 +286,7 @@ const TODOInterface = (() => {
 
 
     return {
-        create, 
+        createTODO, 
         read, 
         update, 
         setPriority, 
